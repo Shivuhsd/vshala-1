@@ -1,14 +1,10 @@
-// school_Admin/pages/accounts/ParticularsModal.jsx
-
 import React, { useState } from "react";
 import { FiX, FiTrash2 } from "react-icons/fi";
 import axiosInstance from "../../../services/axiosInstance";
 import { toast } from "react-toastify";
 
 const ParticularsModal = ({ bill, onClose }) => {
-  const [particulars, setParticulars] = useState(
-    bill.particulars?.length > 0 ? bill.particulars : []
-  );
+  const [particulars, setParticulars] = useState(bill.particulars || []);
   const [newParticular, setNewParticular] = useState({ label: "", price: "" });
   const [loading, setLoading] = useState(false);
 
@@ -65,28 +61,29 @@ const ParticularsModal = ({ bill, onClose }) => {
 
         {/* Existing Particulars */}
         <div className="space-y-2 max-h-52 overflow-y-auto mb-4">
-          {particulars.length === 0 && (
+          {particulars.length === 0 ? (
             <p className="text-sm text-gray-400">No particulars added yet.</p>
-          )}
-          {particulars.map((p, i) => (
-            <div
-              key={i}
-              className="flex justify-between items-center px-3 py-2 border rounded"
-            >
-              <span className="font-medium text-gray-700">{p.label}</span>
-              <div className="flex items-center gap-4">
-                <span className="text-green-700 font-semibold">
-                  ₹ {p.price}
-                </span>
-                <button
-                  onClick={() => handleDelete(i)}
-                  className="text-gray-500 hover:text-red-500"
-                >
-                  <FiTrash2 size={16} />
-                </button>
+          ) : (
+            particulars.map((p, i) => (
+              <div
+                key={i}
+                className="flex justify-between items-center px-3 py-2 border rounded"
+              >
+                <span className="font-medium text-gray-700">{p.label}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-green-700 font-semibold">
+                    ₹ {p.price}
+                  </span>
+                  <button
+                    onClick={() => handleDelete(i)}
+                    className="text-gray-500 hover:text-red-500"
+                  >
+                    <FiTrash2 size={16} />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
         {/* Add new Particular */}

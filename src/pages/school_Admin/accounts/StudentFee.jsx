@@ -1,15 +1,15 @@
-// school_Admin/pages/accounts/StudentFee.jsx
-
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
-  FiFilter,
   FiEye,
-  FiPrinter,
   FiChevronDown,
   FiChevronUp,
+  FiPrinter,
+  FiCreditCard,
 } from "react-icons/fi";
 import StudentBill from "./StudentBill";
-import { useReactToPrint } from "react-to-print";
+import BillPreviewModal from "./BillPreviewModal";
+import PaymentModal from "./PaymentModal";
+import { toast } from "react-toastify";
 
 const dummyStudents = [
   {
@@ -71,16 +71,13 @@ const StudentFee = () => {
     search: "",
   });
   const [expanded, setExpanded] = useState(null);
-  const [billStudent, setBillStudent] = useState(null);
-  const billRef = useRef();
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedParticular, setSelectedParticular] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  const handlePrint = useReactToPrint({
-    content: () => billRef.current,
-  });
-
-  const generateBill = (student) => {
-    setBillStudent(student);
-    setTimeout(() => handlePrint(), 300);
+  const handlePaymentSubmit = ({ amount, mode, label }) => {
+    toast.success(`Paid ₹${amount} for ${label} via ${mode}`);
+    // Ideally refresh data from backend here
   };
 
   const filteredStudents = dummyStudents.filter((s) => {
@@ -100,26 +97,30 @@ const StudentFee = () => {
       </h2>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded shadow flex flex-wrap gap-4 items-end">
+      <div className="bg-white p-4 rounded-xl shadow flex flex-wrap gap-4 items-end border">
         <div>
-          <label className="block text-sm font-medium">Class</label>
+          <label className="block text-sm font-medium text-gray-600">
+            Class
+          </label>
           <select
             value={filters.class}
             onChange={(e) => setFilters({ ...filters, class: e.target.value })}
-            className="border px-3 py-2 rounded w-40"
+            className="border px-3 py-2 rounded-md w-40 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <option value="">All</option>
             <option value="10">10</option>
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium">Section</label>
+          <label className="block text-sm font-medium text-gray-600">
+            Section
+          </label>
           <select
             value={filters.section}
             onChange={(e) =>
               setFilters({ ...filters, section: e.target.value })
             }
-            className="border px-3 py-2 rounded w-40"
+            className="border px-3 py-2 rounded-md w-40 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <option value="">All</option>
             <option value="A">A</option>
@@ -127,19 +128,21 @@ const StudentFee = () => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium">Search</label>
+          <label className="block text-sm font-medium text-gray-600">
+            Search
+          </label>
           <input
             type="text"
             value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })}
             placeholder="Name or Admission No"
-            className="border px-3 py-2 rounded w-60"
+            className="border px-3 py-2 rounded-md w-60 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded shadow overflow-x-auto">
+      {/* Student Table */}
+      <div className="bg-white rounded-xl shadow border overflow-x-auto">
         <table className="min-w-full text-sm text-gray-700">
           <thead className="bg-gray-100 text-left">
             <tr>
@@ -156,7 +159,7 @@ const StudentFee = () => {
           <tbody>
             {filteredStudents.map((student) => (
               <React.Fragment key={student.id}>
-                <tr className="border-t hover:bg-gray-50">
+                <tr className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2 font-semibold">{student.name}</td>
                   <td className="px-4 py-2">{student.admission_no}</td>
                   <td className="px-4 py-2">{student.class}</td>
@@ -176,7 +179,7 @@ const StudentFee = () => {
                       className="text-purple-700 hover:underline flex items-center gap-1"
                     >
                       <FiEye />
-                      View
+                      {expanded === student.id ? "Hide" : "View"}
                       {expanded === student.id ? (
                         <FiChevronUp />
                       ) : (
@@ -189,40 +192,7 @@ const StudentFee = () => {
                 {expanded === student.id && (
                   <tr className="bg-gray-50 border-t">
                     <td colSpan="8" className="px-6 py-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm text-gray-500">Name</p>
-                          <p className="text-lg font-semibold">
-                            {student.name}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Admission No</p>
-                          <p className="text-lg font-semibold">
-                            {student.admission_no}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Total Fee</p>
-                          <p className="text-lg font-semibold text-gray-800">
-                            ₹{student.total_fee}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Paid</p>
-                          <p className="text-lg font-semibold text-green-700">
-                            ₹{student.total_paid}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-500">Balance</p>
-                          <p className="text-lg font-semibold text-red-600">
-                            ₹{student.total_fee - student.total_paid}
-                          </p>
-                        </div>
-                      </div>
-
-                      <table className="w-full border text-sm mt-2 mb-4">
+                      <table className="w-full border text-sm mb-4">
                         <thead className="bg-gray-100">
                           <tr>
                             <th className="p-2 border">Particular</th>
@@ -249,13 +219,36 @@ const StudentFee = () => {
                         </tbody>
                       </table>
 
-                      <button
-                        onClick={() => generateBill(student)}
-                        className="bg-purple-600 text-white px-4 py-2 rounded shadow flex items-center gap-2"
-                      >
-                        <FiPrinter />
-                        Generate Bill
-                      </button>
+                      {/* Action Buttons Below Table */}
+                      <div className="flex justify-end gap-3">
+                        <button
+                          disabled={student.total_paid >= student.total_fee}
+                          onClick={() => {
+                            const dueItem = student.breakdown.find(
+                              (i) => i.amount > i.paid
+                            );
+                            if (dueItem) {
+                              setSelectedParticular(dueItem);
+                              setShowPaymentModal(true);
+                            }
+                          }}
+                          className={`flex items-center gap-2 px-4 py-2 rounded text-sm font-medium ${
+                            student.total_paid >= student.total_fee
+                              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                              : "bg-purple-700 text-white hover:bg-purple-800"
+                          }`}
+                        >
+                          <FiCreditCard />
+                          Pay Due
+                        </button>
+                        <button
+                          onClick={() => setSelectedStudent(student)}
+                          className="flex items-center gap-2 px-4 py-2 rounded text-sm font-medium bg-gray-100 border hover:bg-gray-200"
+                        >
+                          <FiPrinter />
+                          Print Bill
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )}
@@ -265,10 +258,25 @@ const StudentFee = () => {
         </table>
       </div>
 
-      {/* Hidden Printable Section */}
-      <div className="hidden print:block">
-        {billStudent && <StudentBill ref={billRef} student={billStudent} />}
-      </div>
+      {/* Modals */}
+      {selectedStudent && (
+        <BillPreviewModal
+          student={selectedStudent}
+          isOpen={true}
+          onClose={() => setSelectedStudent(null)}
+        />
+      )}
+
+      {showPaymentModal && selectedParticular && (
+        <PaymentModal
+          particular={selectedParticular}
+          onClose={() => {
+            setShowPaymentModal(false);
+            setSelectedParticular(null);
+          }}
+          onSubmit={handlePaymentSubmit}
+        />
+      )}
     </div>
   );
 };

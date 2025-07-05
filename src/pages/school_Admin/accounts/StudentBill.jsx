@@ -1,110 +1,102 @@
-// school_Admin/pages/accounts/StudentBill.jsx
-
-import React, { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
+import React from "react";
 import { FiPrinter } from "react-icons/fi";
 
-const dummyBill = {
-  billNo: "BILL-2025-001",
-  studentName: "Kiran M",
-  admissionNo: "A1023",
-  class: "10",
-  section: "A",
-  date: "2025-06-28",
-  particulars: [
-    { id: 1, label: "Admission Fee", amount: 2000 },
-    { id: 2, label: "Tuition Fee", amount: 3000 },
-  ],
-};
+const StudentBill = ({ student, onClose }) => {
+  if (!student) return null;
 
-const StudentBill = () => {
-  const componentRef = useRef();
-
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: `${dummyBill.studentName}_Bill_${dummyBill.billNo}`,
-  });
-
-  const totalAmount = dummyBill.particulars.reduce(
+  const totalAmount = student.breakdown.reduce(
     (sum, item) => sum + item.amount,
     0
   );
+  const totalPaid = student.breakdown.reduce((sum, item) => sum + item.paid, 0);
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-purple-800">Student Bill</h2>
-        <button
-          onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white rounded shadow text-sm"
-        >
-          <FiPrinter />
-          Print
-        </button>
-      </div>
-
-      {/* Bill Preview Section */}
-      <div
-        ref={componentRef}
-        className="bg-white p-6 rounded-md shadow-md max-w-3xl mx-auto border border-gray-200"
-      >
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-bold text-purple-700">Vshala School</h3>
-          <p className="text-sm text-gray-500">Student Fee Bill</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/30 backdrop-blur-sm">
+      <div className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-3xl print:w-full print:relative border border-gray-200">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-5 print:hidden">
+          <span className="text-sm font-bold text-purple-600">
+            Student Bill
+          </span>
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition shadow-sm"
+          >
+            <FiPrinter />
+            Print
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+        {/* Title */}
+        <h2 className="text-center text-xl font-semibold text-gray-800 border-b pb-3 mb-5">
+          Fee Receipt
+        </h2>
+
+        {/* Student Info */}
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-6 text-sm">
           <p>
-            <span className="font-semibold">Bill No:</span> {dummyBill.billNo}
-          </p>
-          <p>
-            <span className="font-semibold">Date:</span> {dummyBill.date}
-          </p>
-          <p>
-            <span className="font-semibold">Student Name:</span>{" "}
-            {dummyBill.studentName}
+            <span className="font-semibold">Name:</span> {student?.name}
           </p>
           <p>
             <span className="font-semibold">Admission No:</span>{" "}
-            {dummyBill.admissionNo}
+            {student?.admission_no}
           </p>
           <p>
-            <span className="font-semibold">Class:</span> {dummyBill.class}
-          </p>
-          <p>
-            <span className="font-semibold">Section:</span> {dummyBill.section}
+            <span className="font-semibold">Class:</span> {student?.class}
           </p>
         </div>
 
-        <table className="w-full text-sm border-t border-b">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-            <tr>
-              <th className="text-left px-4 py-2">#</th>
-              <th className="text-left px-4 py-2">Particular</th>
-              <th className="text-right px-4 py-2">Amount (₹)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dummyBill.particulars.map((item, idx) => (
-              <tr key={item.id} className="border-t hover:bg-gray-50">
-                <td className="px-4 py-2">{idx + 1}</td>
-                <td className="px-4 py-2">{item.label}</td>
-                <td className="px-4 py-2 text-right">₹{item.amount}</td>
+        {/* Fee Table */}
+        <div className="overflow-x-auto border rounded-lg mb-6">
+          <table className="min-w-full text-sm border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 text-left border">Particular</th>
+                <th className="px-4 py-2 text-left border">Amount</th>
+                <th className="px-4 py-2 text-left border">Paid</th>
+                <th className="px-4 py-2 text-left border">Balance</th>
               </tr>
-            ))}
-            <tr className="font-bold border-t">
-              <td colSpan={2} className="px-4 py-2 text-right">
-                Total
-              </td>
-              <td className="px-4 py-2 text-right text-green-700">
-                ₹{totalAmount}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {student.breakdown.map((item, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 border">{item.label}</td>
+                  <td className="px-4 py-2 border">₹{item.amount}</td>
+                  <td className="px-4 py-2 border text-green-600">
+                    ₹{item.paid}
+                  </td>
+                  <td
+                    className={`px-4 py-2 border font-semibold ${
+                      item.amount - item.paid > 0
+                        ? "text-red-500"
+                        : "text-green-600"
+                    }`}
+                  >
+                    ₹{item.amount - item.paid}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-        <div className="text-right mt-6 text-xs text-gray-400">
-          This is a system-generated bill. No signature required.
+        {/* Totals */}
+        <div className="text-right text-sm font-medium">
+          Total Paid: ₹{totalPaid} / ₹{totalAmount}
+        </div>
+
+        {/* Close Button */}
+        <div className="mt-6 text-center print:hidden">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-100 transition"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

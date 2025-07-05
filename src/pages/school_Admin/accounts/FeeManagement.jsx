@@ -1,5 +1,3 @@
-// school_Admin/pages/accounts/FeeManagement.jsx
-
 import React, { useEffect, useState } from "react";
 import { FiPlusCircle, FiEye, FiFileText } from "react-icons/fi";
 import axiosInstance from "../../../services/axiosInstance";
@@ -29,14 +27,6 @@ const FeeManagement = () => {
         { name: "Lab Power Backup", price: "800.00" },
       ],
     },
-    {
-      id: "dummy-2",
-      number: "BILL-2025-002",
-      name: "Furniture Repairs",
-      bill_type: "private",
-      created_on: "2025-06-05T15:30:00",
-      particulars: [{ name: "Woodwork", price: "1200.00" }],
-    },
   ];
 
   useEffect(() => {
@@ -53,11 +43,10 @@ const FeeManagement = () => {
       const res = await axiosInstance.get(
         `/api/schools/v1/bills/?school_id=${selectedSchool.id}&session_id=${selectedSession.id}`
       );
-      const billData = res.data;
-      setBills(billData?.length ? billData : dummyData);
+      setBills(res.data?.length ? res.data : dummyData);
     } catch (err) {
-      toast.error("Failed to load bills, using dummy data.");
       console.error(err);
+      toast.error("Failed to load bills. Using dummy data.");
       setBills(dummyData);
     } finally {
       setLoading(false);
@@ -74,7 +63,6 @@ const FeeManagement = () => {
   return (
     <div className="space-y-10">
       <ToastContainer />
-      {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-[#6B21A8]">Fee Management</h1>
         <button
@@ -89,7 +77,6 @@ const FeeManagement = () => {
         </button>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl shadow border border-[#E2E8F0] overflow-x-auto">
         {bills.length === 0 && !loading ? (
           <div className="text-center py-10 text-gray-400 text-sm">
@@ -149,7 +136,6 @@ const FeeManagement = () => {
         )}
       </div>
 
-      {/* Modals */}
       {showBillModal && (
         <BillModal
           onClose={() => {
