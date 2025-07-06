@@ -15,19 +15,7 @@ const FeeManagement = () => {
   const [selectedBill, setSelectedBill] = useState(null);
   const [showParticularsModal, setShowParticularsModal] = useState(false);
 
-  const dummyData = [
-    {
-      id: "dummy-1",
-      number: "BILL-2025-001",
-      name: "Electricity Charges",
-      bill_type: "govt",
-      created_on: "2025-06-01T10:00:00",
-      particulars: [
-        { name: "Main Block Power", price: "1500.00" },
-        { name: "Lab Power Backup", price: "800.00" },
-      ],
-    },
-  ];
+
 
   useEffect(() => {
     fetchBills();
@@ -41,13 +29,12 @@ const FeeManagement = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get(
-        `/api/schools/v1/bills/?school_id=${selectedSchool.id}&session_id=${selectedSession.id}`
+        `/schools/v1/bills/?school_id=${selectedSchool.id}&session_id=${selectedSession.id}`
       );
       setBills(res.data?.length ? res.data : dummyData);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load bills. Using dummy data.");
-      setBills(dummyData);
+      toast.error("Failed to load bills.");
     } finally {
       setLoading(false);
     }

@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import loginImage from "../../../assets/login_image.png";
 import vtechLogo2 from "../../../assets/vtech_logo_2.jpeg"; // new logo
 import { useSchool } from "../context/SchoolContext";
+import { BASEURL } from "../../../services/axiosInstance";
 
 const icons = [
   "fa-book",
@@ -44,7 +45,7 @@ const SchoolLogin = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        "https://api.vshala.in/api/accounts/v1/login/web/",
+        `${BASEURL}/accounts/v1/login/web/`,
         { login, password },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -54,7 +55,7 @@ const SchoolLogin = () => {
       localStorage.setItem("user", username);
       localStorage.setItem("school_id", school_id);
       const infoRes = await axios.get(
-        `https://api.vshala.in/api/admin/v1/sessions/?school_id=${school_id}`,
+        `${BASEURL}/admin/v1/sessions/?school_id=${school_id}`,
         {
           headers: { Authorization: `Bearer ${access_token}` },
         }

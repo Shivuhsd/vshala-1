@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASEURL = "https://api.vshala.in/api/";
+export const BASEURL = "http://127.0.0.1:8000/api";
 
 // Create Axios instance
 const axiosInstance = axios.create({
