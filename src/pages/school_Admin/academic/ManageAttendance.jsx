@@ -15,21 +15,38 @@ const ManageAttendance = () => {
 
   // 🔁 Fetch attendance data
   useEffect(() => {
-    if (!class_id || !section || !date) return;
+  if (!class_id || !section || !date) return;
 
-    const fetchAttendance = async () => {
-      setLoading(true);
-      try {
-        const formattedMonth = date.slice(0, 7); // yyyy-mm
-        const res = await axiosInstance.get(
-          `/schools/v1/attendances/?date=${formattedMonth}&class_id=${class_id}&section=${section}${
-            subject ? `&subject=${subject}` : ""
-          }`
+  const fetchAttendance = async () => {
+    setLoading(true);
+    try {
+      const formattedMonth = date.slice(0, 7); // yyyy-mm
+      let res = await axiosInstance.get(
+        `/schools/v1/attendances/?date=${formattedMonth}&class_id=${class_id}&section=${section}${
+          subject ? `&subject=${subject}` : ""
+        }`
+      );
+
+      let data = res.data.attendance;
+
+      // If attendance is empty or null, fetch student list instead
+      if (!Array.isArray(data) || data.length === 0) {
+        console.log("No attendance found, fetching student list...");
+        const studentRes = await axiosInstance.get(
+          `/schools/v1/students?class_id=${class_id}&section_id=${section}&school_id=${selectedSchool.id}&session_id=${selectedSession.id}`
         );
+        const studentList = studentRes.data || [];
 
-        const data = res.data || [];
+        // Map students with undefined attendance
+        const mapped = studentList.map((s) => ({
+          id: s.id,
+          name: s.name,
+          status: "undefined",
+        }));
 
-        // Transform data into UI state
+        setStudents(mapped);
+      } else {
+        // Attendance exists, map attendance with today’s record
         const mapped = data.map((student) => {
           const todayRecord = student.records.find((r) => r.date === date);
           return {
@@ -40,15 +57,17 @@ const ManageAttendance = () => {
         });
 
         setStudents(mapped);
-      } catch (err) {
-        toast.error("Failed to fetch attendance.");
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch attendance or student list.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchAttendance();
-  }, [class_id, section, date, subject]);
+  fetchAttendance();
+}, [class_id, section, date, subject]);
 
   const handleStatusChange = (id, status) => {
     setStudents((prev) =>
@@ -67,17 +86,19 @@ const ManageAttendance = () => {
         class_id,
         section,
         subject: subject || null,
-        taken_by: 13, // Replace with dynamic staff/user ID
         attendance: students.map((s) => ({
           student: s.id,
           status: s.status,
         })),
       };
-
+      console.log(payload)
       await axiosInstance.post(`/schools/v1/attendances/`, payload);
+       console.log("Submission successful");
+       alert("Attendance Submitted Successfully")
       toast.success("Attendance submitted successfully");
     } catch (err) {
       toast.error("Failed to save attendance");
+      alert("Attendance Submitted Successfully")
     }
   };
 
