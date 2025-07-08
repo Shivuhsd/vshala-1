@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useSchool } from "../context/SchoolContext";
 import {
   FiEye,
   FiChevronDown,
@@ -10,6 +11,8 @@ import StudentBill from "./StudentBill";
 import BillPreviewModal from "./BillPreviewModal";
 import PaymentModal from "./PaymentModal";
 import { toast } from "react-toastify";
+import axiosInstance from "../../../services/axiosInstance";
+import Bill_Modal from "./Bill_Modal";
 
 const dummyStudents = [
   {
@@ -65,30 +68,90 @@ const dummyStudents = [
 ];
 
 const StudentFee = () => {
+  const [students, setStudents] = useState([]);
+  const [billModalStudent, setBillModalStudent] = useState(null);
+
+
+  const { selectedSchool, selectedSession } = useSchool();
   const [filters, setFilters] = useState({
     class: "",
     section: "",
     search: "",
   });
+  const [classes, setClasses] = useState([]);
+  const [sections, setSections] = useState([]);
   const [expanded, setExpanded] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedParticular, setSelectedParticular] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+    const schoolId = "123"; // Replace with actual school ID
+  const sessionId = "456"; // Replace with actual session ID
+  // Fetch classes on component mount
+  useEffect(() => {
+    axiosInstance
+      .get(`/schools/v1/schools/classes/links/?school_id=${selectedSchool.id}&session_id=${selectedSession.id}`)
+      .then((res) => {
+        setClasses(res.data.results || []);
+        console.log(res.data.results)
+      })
+      .catch((err) => {
+        toast.error("Failed to fetch classes");
+        console.error(err);
+      });
+  }, [schoolId, sessionId]);
+
+  
+  useEffect(() => {
+    if (!filters.class) {
+      setSections([]);
+      return;
+    }
+
+    const selectedClass = classes.find((cls) => cls.id === filters.class);
+    if (selectedClass && selectedClass.sections) {
+      setSections(selectedClass.sections);
+    } else {
+      setSections([]);
+    }
+  }, [filters.class, classes]);
+
+  useEffect(() => {
+  const fetchStudents = async () => {
+    if (filters.class && filters.section) {
+      console.log(filters.class, filters.section)
+      try {
+        const res = await axiosInstance.get(
+          `/schools/v1/students?class_id=${filters.class}&section_id=${filters.section}&school_id=${selectedSchool.id}&session_id=${selectedSession.id}`
+        );
+        setStudents(res.data || []);
+        console.log(res.data)
+      } catch (err) {
+        toast.error("Failed to fetch students");
+        console.error(err);
+      }
+    } else {
+      setStudents([]); // Clear students if filter is reset
+    }
+  };
+
+  fetchStudents();
+}, [filters.class, filters.section]);
+
+
 
   const handlePaymentSubmit = ({ amount, mode, label }) => {
     toast.success(`Paid ₹${amount} for ${label} via ${mode}`);
     // Ideally refresh data from backend here
   };
 
-  const filteredStudents = dummyStudents.filter((s) => {
-    return (
-      (filters.class === "" || s.class === filters.class) &&
-      (filters.section === "" || s.section === filters.section) &&
-      (filters.search === "" ||
-        s.name.toLowerCase().includes(filters.search.toLowerCase()) ||
-        s.admission_no.toLowerCase().includes(filters.search.toLowerCase()))
-    );
-  });
+ const filteredStudents = students.filter((s) => {
+  return (
+    filters.search === "" ||
+    s.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+    s.admission_no.toLowerCase().includes(filters.search.toLowerCase())
+  );
+});
 
   return (
     <div className="space-y-6">
@@ -108,7 +171,11 @@ const StudentFee = () => {
             className="border px-3 py-2 rounded-md w-40 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
           >
             <option value="">All</option>
-            <option value="10">10</option>
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.class_label}
+              </option>
+            ))}
           </select>
         </div>
         <div>
@@ -116,16 +183,20 @@ const StudentFee = () => {
             Section
           </label>
           <select
-            value={filters.section}
-            onChange={(e) =>
-              setFilters({ ...filters, section: e.target.value })
-            }
-            className="border px-3 py-2 rounded-md w-40 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
-          >
-            <option value="">All</option>
-            <option value="A">A</option>
-            <option value="B">B</option>
-          </select>
+  value={filters.section}
+  onChange={(e) =>
+    setFilters({ ...filters, section: e.target.value })
+  }
+  className="border px-3 py-2 rounded-md w-40 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+>
+  <option value="">All</option>
+  {sections.map((section) => (
+    <option key={section.id} value={section.id}>
+      {section.label}
+    </option>
+  ))}
+</select>
+
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-600">
@@ -150,9 +221,7 @@ const StudentFee = () => {
               <th className="px-4 py-3">Admission No</th>
               <th className="px-4 py-3">Class</th>
               <th className="px-4 py-3">Section</th>
-              <th className="px-4 py-3">Total Fee</th>
-              <th className="px-4 py-3">Paid</th>
-              <th className="px-4 py-3">Balance</th>
+             
               <th className="px-4 py-3 text-center">Action</th>
             </tr>
           </thead>
@@ -161,32 +230,20 @@ const StudentFee = () => {
               <React.Fragment key={student.id}>
                 <tr className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2 font-semibold">{student.name}</td>
-                  <td className="px-4 py-2">{student.admission_no}</td>
-                  <td className="px-4 py-2">{student.class}</td>
+                  <td className="px-4 py-2">{student.admission_number}</td>
+                  <td className="px-4 py-2">{student.class_link}</td>
                   <td className="px-4 py-2">{student.section}</td>
-                  <td className="px-4 py-2">₹{student.total_fee}</td>
-                  <td className="px-4 py-2 text-green-700">
-                    ₹{student.total_paid}
-                  </td>
-                  <td className="px-4 py-2 text-red-600">
-                    ₹{student.total_fee - student.total_paid}
-                  </td>
-                  <td className="px-4 py-2 text-center">
+                  <td>
                     <button
-                      onClick={() =>
-                        setExpanded(expanded === student.id ? null : student.id)
-                      }
-                      className="text-purple-700 hover:underline flex items-center gap-1"
-                    >
-                      <FiEye />
-                      {expanded === student.id ? "Hide" : "View"}
-                      {expanded === student.id ? (
-                        <FiChevronUp />
-                      ) : (
-                        <FiChevronDown />
-                      )}
-                    </button>
+  onClick={() => setBillModalStudent(student)}
+  className="text-purple-700 hover:underline flex items-center gap-1"
+>
+  <FiEye />
+  View Bill
+</button>
+
                   </td>
+                 
                 </tr>
 
                 {expanded === student.id && (
@@ -202,7 +259,7 @@ const StudentFee = () => {
                             <th className="p-2 border">Last Paid</th>
                           </tr>
                         </thead>
-                        <tbody>
+                        {/* <tbody>
                           {student.breakdown.map((item) => (
                             <tr key={item.id}>
                               <td className="p-2 border">{item.label}</td>
@@ -216,7 +273,7 @@ const StudentFee = () => {
                               <td className="p-2 border">{item.last_paid}</td>
                             </tr>
                           ))}
-                        </tbody>
+                        </tbody> */}
                       </table>
 
                       {/* Action Buttons Below Table */}
@@ -257,6 +314,13 @@ const StudentFee = () => {
           </tbody>
         </table>
       </div>
+
+            {billModalStudent && (
+  <Bill_Modal
+    student={billModalStudent}
+    onClose={() => setBillModalStudent(null)}
+  />
+)}
 
       {/* Modals */}
       {selectedStudent && (

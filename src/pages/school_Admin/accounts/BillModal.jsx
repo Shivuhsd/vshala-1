@@ -36,7 +36,7 @@ const BillModal = ({ onClose, selectedBill }) => {
 
     try {
       setLoading(true);
-      await axiosInstance.post("/api/schools/v1/bills/", payload);
+      await axiosInstance.post("/schools/v1/bills/", payload);
       toast.success("Bill created successfully!");
       onClose();
     } catch (err) {
@@ -97,7 +97,7 @@ const BillModal = ({ onClose, selectedBill }) => {
               className="w-full mt-1 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#6B21A8]"
             >
               <option value="govt">Govt</option>
-              <option value="private">Private</option>
+              <option value="pvt">Private</option>
               <option value="trust">Trust</option>
             </select>
           </div>
