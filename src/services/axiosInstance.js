@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASEURL = "http://127.0.0.1:8000/api";
+export const BASEURL = "https://anjuman.vshala.in/api";
 
 // Create Axios instance
 const axiosInstance = axios.create({

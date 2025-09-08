@@ -15,8 +15,6 @@ const FeeManagement = () => {
   const [selectedBill, setSelectedBill] = useState(null);
   const [showParticularsModal, setShowParticularsModal] = useState(false);
 
-
-
   useEffect(() => {
     fetchBills();
   }, [selectedSchool?.id, selectedSession?.id]);
@@ -34,7 +32,7 @@ const FeeManagement = () => {
       setBills(res.data?.length ? res.data : dummyData);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load bills.");
+      //toast.error("Failed to load bills.");
     } finally {
       setLoading(false);
     }

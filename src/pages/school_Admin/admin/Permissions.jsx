@@ -1,12 +1,12 @@
+// school_Admin/pages/school_Admin/Permissions.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  FiPlus,
-  FiEdit2,
-  FiSearch,
   FiRefreshCw,
+  FiSearch,
   FiShield,
   FiUsers,
+  FiKey,
 } from "react-icons/fi";
 import axiosInstance from "../../../services/axiosInstance";
 import { toast } from "react-toastify";
@@ -15,7 +15,10 @@ import { useSchool } from "../../school_Admin/context/SchoolContext";
 const SkeletonRow = () => (
   <tr className="animate-pulse">
     <td className="px-4 py-3">
-      <div className="h-4 w-40 bg-gray-200 rounded" />
+      <div className="h-4 w-48 bg-gray-200 rounded" />
+    </td>
+    <td className="px-4 py-3">
+      <div className="h-4 w-32 bg-gray-200 rounded" />
     </td>
     <td className="px-4 py-3">
       <div className="h-4 w-20 bg-gray-200 rounded" />
@@ -26,7 +29,7 @@ const SkeletonRow = () => (
 const EmptyState = ({ title, subtitle, action }) => (
   <div className="py-16 text-center">
     <div className="mx-auto w-12 h-12 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center mb-3">
-      <FiShield />
+      <FiKey />
     </div>
     <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
     {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
@@ -43,19 +46,32 @@ const useDebouncedValue = (value, delay = 250) => {
   return v;
 };
 
-const Roles = () => {
+const formatDate = (iso) => {
+  if (!iso) return "-";
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    });
+  } catch {
+    return iso;
+  }
+};
+
+const Permissions = () => {
   const navigate = useNavigate();
   const { selectedSchool } = useSchool();
-  const [roles, setRoles] = useState([]);
+  const mountedRef = useRef(true);
+
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(25);
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
-  const mountedRef = useRef(true);
 
   const debouncedQuery = useDebouncedValue(searchQuery, 250);
-  const totalCount = roles.length;
 
   useEffect(() => {
     mountedRef.current = true;
@@ -65,88 +81,87 @@ const Roles = () => {
   }, []);
 
   useEffect(() => {
-    const fetchRoles = async () => {
-      if (!selectedSchool?.id) {
-        setRoles([]);
-        return;
-      }
+    const fetchPermissions = async () => {
       setLoading(true);
       try {
-        const url = `/accounts/v1/roles/${
-          selectedSchool?.id ? `?school_id=${selectedSchool.id}` : ""
-        }`;
+        // Base endpoint from your spec
+        let url = "/accounts/v1/role/permissions/all/";
+        // attach school_id if available (some backends expect it)
+        if (selectedSchool?.id) {
+          const sep = url.includes("?") ? "&" : "?";
+          url = `${url}${sep}school_id=${selectedSchool.id}`;
+        }
         const res = await axiosInstance.get(url);
         if (!mountedRef.current) return;
-        setRoles(Array.isArray(res.data?.roles) ? res.data.roles : []);
+        setPermissions(
+          Array.isArray(res.data?.permissions) ? res.data.permissions : []
+        );
       } catch (err) {
         console.error(err);
-        toast.error("Failed to fetch roles.");
-        if (mountedRef.current) setRoles([]);
+        toast.error("Failed to load permissions.");
+        if (mountedRef.current) setPermissions([]);
       } finally {
         if (mountedRef.current) setLoading(false);
       }
     };
-    fetchRoles();
+
+    fetchPermissions();
   }, [selectedSchool?.id, refreshKey]);
 
-  const filteredRoles = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
-    if (!q) return roles;
-    return roles.filter((r) =>
-      String(r?.name || "")
-        .toLowerCase()
-        .includes(q)
+    if (!q) return permissions;
+    return permissions.filter(
+      (p) =>
+        String(p?.label || "")
+          .toLowerCase()
+          .includes(q) ||
+        String(p?.code || "")
+          .toLowerCase()
+          .includes(q)
     );
-  }, [roles, debouncedQuery]);
+  }, [permissions, debouncedQuery]);
 
-  const totalFiltered = filteredRoles.length;
+  const totalFiltered = filtered.length;
   const perPage = rowsPerPage === 0 ? totalFiltered : rowsPerPage;
   const totalPages = Math.max(1, Math.ceil(totalFiltered / (perPage || 1)));
 
   useEffect(() => setPage(1), [debouncedQuery, rowsPerPage]);
 
   const paginated = useMemo(() => {
-    if (rowsPerPage === 0) return filteredRoles;
+    if (rowsPerPage === 0) return filtered;
     const start = (page - 1) * perPage;
-    return filteredRoles.slice(start, start + perPage);
-  }, [filteredRoles, page, perPage, rowsPerPage]);
-
-  const handleRefresh = () => setRefreshKey((k) => k + 1);
+    return filtered.slice(start, start + perPage);
+  }, [filtered, page, perPage, rowsPerPage]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="inline-flex items-center gap-2 text-purple-700">
             <div className="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center">
-              <FiUsers />
+              <FiKey />
             </div>
             <span className="uppercase text-xs font-semibold tracking-wider">
               Access Control
             </span>
           </div>
           <h1 className="text-2xl font-bold text-[#4C1D95] mt-1">
-            Manage Roles
+            Permissions
           </h1>
           <p className="text-sm text-gray-500">
-            Create and update roles to control access across modules.
+            List of all permission codes available in the system.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            onClick={handleRefresh}
+            onClick={() => setRefreshKey((k) => k + 1)}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-white border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition"
             title="Refresh"
           >
             <FiRefreshCw className="text-purple-700" /> Refresh
-          </button>
-
-          <button
-            onClick={() => navigate("/school-admin/roles/add")}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:to-fuchsia-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow"
-          >
-            <FiPlus /> Add New Role
           </button>
         </div>
       </div>
@@ -168,11 +183,6 @@ const Roles = () => {
             <span>entries</span>
             <span className="ml-3 text-gray-600">
               {totalFiltered} result{totalFiltered === 1 ? "" : "s"}
-              {debouncedQuery && (
-                <span className="ml-1 text-gray-400">
-                  (filtered from {totalCount})
-                </span>
-              )}
             </span>
           </div>
 
@@ -180,7 +190,7 @@ const Roles = () => {
             <FiSearch className="absolute left-3 top-3 text-gray-400" />
             <input
               type="text"
-              placeholder="Search roles…"
+              placeholder="Search permissions by label or code…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border rounded-md text-sm focus:ring-2 focus:ring-purple-500"
@@ -192,8 +202,9 @@ const Roles = () => {
           <table className="min-w-full text-sm text-gray-700">
             <thead className="bg-[#F8FAFC] text-gray-600 uppercase text-xs tracking-wider sticky top-0">
               <tr>
-                <th className="px-4 py-3 text-left">Role</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <th className="px-4 py-3 text-left">Label</th>
+                <th className="px-4 py-3 text-left">Code</th>
+                <th className="px-4 py-3 text-left">Created</th>
               </tr>
             </thead>
 
@@ -207,9 +218,9 @@ const Roles = () => {
                   <SkeletonRow />
                 </>
               ) : paginated.length > 0 ? (
-                paginated.map((role) => (
+                paginated.map((p) => (
                   <tr
-                    key={role.id}
+                    key={p.id}
                     className="border-t hover:bg-purple-50/40 transition"
                   >
                     <td className="px-4 py-3">
@@ -217,46 +228,34 @@ const Roles = () => {
                         <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-purple-100 text-purple-700">
                           <FiShield />
                         </span>
-                        <span className="font-medium text-gray-900">
-                          {role.name}
-                        </span>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {p.label}
+                          </div>
+                          <div className="text-xs text-gray-400">{p.id}</div>
+                        </div>
                       </div>
                     </td>
+
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() =>
-                          navigate(`/school-admin/roles/edit/${role.id}`)
-                        }
-                        className="inline-flex items-center gap-1.5 text-sm text-purple-700 hover:text-purple-900 font-medium px-2 py-1 rounded hover:bg-purple-100"
-                        title="Edit role"
-                      >
-                        <FiEdit2 /> Edit
-                      </button>
+                      <div className="font-mono text-sm text-gray-700">
+                        {p.code}
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <div className="text-sm text-gray-600">
+                        {formatDate(p.created_at)}
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr className="border-t">
-                  <td className="px-4" colSpan={2}>
+                  <td className="px-4" colSpan={3}>
                     <EmptyState
-                      title={
-                        debouncedQuery
-                          ? "No matching roles found"
-                          : "No roles yet"
-                      }
-                      subtitle={
-                        debouncedQuery
-                          ? "Try adjusting your search."
-                          : "Create your first role to get started."
-                      }
-                      action={
-                        <button
-                          onClick={() => navigate("/school-admin/roles/add")}
-                          className="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow"
-                        >
-                          <FiPlus /> Add Role
-                        </button>
-                      }
+                      title="No permissions found"
+                      subtitle="No permissions are available or your search returned no results."
                     />
                   </td>
                 </tr>
@@ -322,11 +321,11 @@ const Roles = () => {
       </div>
 
       <div className="text-xs text-gray-400 text-center">
-        Tip: Roles define what users can access across modules. Keep names short
-        & meaningful.
+        Tip: Permission codes are used to grant or check access programmatically
+        (e.g. <span className="font-mono">student.view</span>).
       </div>
     </div>
   );
 };
 
-export default Roles;
+export default Permissions;

@@ -39,6 +39,7 @@ import StaffList from "./pages/school_Admin/admin/StaffList";
 import AddStaffForm from "./pages/school_Admin/admin/AddStaffForm";
 import EditStaffForm from "./pages/school_Admin/admin/EditStaffForm";
 import BulkAdmission from "./pages/school_Admin/student/BulkAdmission.jsx";
+import Permissions from "./pages/school_Admin/admin/Permissions.jsx";
 
 import Inquiries from "./pages/school_Admin/school/Inquiries.jsx";
 import School_Settings from "./pages/school_Admin/school/Settings.jsx";
@@ -59,6 +60,9 @@ import NoticeBoard from "./pages/school_Admin/academic/NoticeBoard.jsx";
 import FeeManagement from "./pages/school_Admin/accounts/FeeManagement.jsx";
 import StudentFee from "./pages/school_Admin/accounts/studentFee.jsx";
 import StudentBill from "./pages/school_Admin/accounts/StudentBill.jsx";
+import LandingPage from "./pages/website/LandingPage.jsx";
+import PucHome from "./pages/website/PucHome.jsx";
+import DegreeHome from "./pages/website/DegreeHome.jsx";
 
 // 🌐 Context
 import { SchoolProvider } from "./pages/school_Admin/context/SchoolContext.jsx";
@@ -69,7 +73,11 @@ const App = () => {
       <Router>
         <Routes>
           {/* 🔐 Super Admin Routes */}
-          <Route path="/" element={<Navigate to="/school-login" replace />} />
+          {/* <Route path="/" element={<Navigate to="/school-login" replace />} /> */}
+
+          {/* <Route path="/" element={<LandingPage />} />
+          <Route path="/puc" element={<PucHome />} />
+          <Route path="/degree" element={<DegreeHome />} />*/}
 
           <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<AdminLayout />}>
@@ -82,9 +90,8 @@ const App = () => {
               element={<AddAdminPage />}
             />
           </Route>
-
           {/* 🏫 School Admin Routes */}
-          <Route path="/school-login" element={<SchoolLogin />} />
+          <Route path="/" element={<SchoolLogin />} />
           <Route
             path="/school-admin/select-school-session"
             element={<SelectSchoolSession />}
@@ -137,6 +144,7 @@ const App = () => {
             <Route path="staff-list" element={<StaffList />} />
             <Route path="staff/add" element={<AddStaffForm />} />
             <Route path="staff/edit/:id" element={<EditStaffForm />} />
+            <Route path="permissions" element={<Permissions />} />
             {/* SM Inventory */}
             <Route path="inventory/supplier" element={<SupplierList />} />\
             <Route
@@ -161,7 +169,6 @@ const App = () => {
               path="/school-admin/accounts/student-fee"
               element={<StudentFee />}
             />
-        
             <Route
               path="/school-admin/accounts/student-bill"
               element={<StudentBill />}

@@ -123,7 +123,7 @@ const SchoolLogin = () => {
         {/* Right Panel */}
         <div className="w-full md:w-1/2 p-8 sm:p-12 bg-white">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
-            School Admin Login
+            College Admin Login
           </h2>
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
