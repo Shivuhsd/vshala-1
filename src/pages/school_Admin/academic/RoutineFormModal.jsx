@@ -185,6 +185,7 @@ const RoutineFormModal = ({ open, onClose, onSaved }) => {
       };
       const url = apiPath(`/schools/v1/timetables/`);
       const { data } = await axiosInstance.post(url, payload);
+      console.log(payload)
       setTimetableId(data?.id);
       toast.success("Timetable created successfully.");
       setStep(2);

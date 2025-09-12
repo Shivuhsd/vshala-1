@@ -225,8 +225,8 @@ useEffect(() => {
                 { label: "Admission #", key: "admission_number" },
                 { label: "Enrollment #", key: "enrollment_number" },
                 { label: "Phone", key: "phone" },
-                { label: "Class", key: "class_label" },
-                { label: "Section", key: "section_label" },
+                { label: "Class", key: "class_link" },
+                { label: "Section", key: "section" },
                 { label: "Father", key: "father_name" },
                 { label: "Roll No", key: "roll_number" },
               ].map((col) => (
@@ -267,8 +267,8 @@ useEffect(() => {
                   <td className="p-3">{stu.admission_number}</td>
                   <td className="p-3">{stu.enrollment_number}</td>
                   <td className="p-3">{stu.phone}</td>
-                  <td className="p-3">{stu.class_label}</td>
-                  <td className="p-3">{stu.section_label}</td>
+                  <td className="p-3">{stu.class_link}</td>
+                  <td className="p-3">{stu.section}</td>
                   <td className="p-3">{stu.father_name}</td>
                   <td className="p-3">{stu.roll_number}</td>
                   <td className="p-3">
