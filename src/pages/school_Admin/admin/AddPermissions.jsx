@@ -1,6 +1,6 @@
 // school_Admin/pages/school_Admin/Permissions.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   FiRefreshCw,
   FiSearch,
@@ -59,7 +59,7 @@ const formatDate = (iso) => {
   }
 };
 
-const Permissions = () => {
+const AddPermissions = () => {
   const navigate = useNavigate();
   const { selectedSchool } = useSchool();
   const mountedRef = useRef(true);
@@ -71,7 +71,40 @@ const Permissions = () => {
   const [page, setPage] = useState(1);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  const [selected, setSelected] = useState([]);
+
+  const { roleId } = useParams()
+
+
   const debouncedQuery = useDebouncedValue(searchQuery, 250);
+
+  const handleSelect = (id) => {
+  setSelected((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  );
+};
+
+const [assignedCodes, setAssignedCodes] = useState([]);
+
+useEffect(() => {
+  const fetchRole = async () => {
+    try {
+      const res = await axiosInstance.get(`/accounts/v1/role/${roleId}/permissions/`);
+      const roleData = res.data;
+      if (roleData?.permissions) {
+        const codes = roleData.permissions.map((p) => p.permissioncode);
+        setAssignedCodes(codes);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to load role details.");
+    }
+  };
+
+  fetchRole();
+}, []);
+
+
 
   useEffect(() => {
     mountedRef.current = true;
@@ -109,18 +142,16 @@ const Permissions = () => {
   }, [selectedSchool?.id, refreshKey]);
 
   const filtered = useMemo(() => {
-    const q = debouncedQuery.trim().toLowerCase();
-    if (!q) return permissions;
-    return permissions.filter(
-      (p) =>
-        String(p?.label || "")
-          .toLowerCase()
-          .includes(q) ||
-        String(p?.code || "")
-          .toLowerCase()
-          .includes(q)
-    );
-  }, [permissions, debouncedQuery]);
+  const q = debouncedQuery.trim().toLowerCase();
+  return permissions.filter(
+    (p) =>
+      !assignedCodes.includes(p.code) && // 👈 hide already assigned
+      (q === "" ||
+        String(p?.label || "").toLowerCase().includes(q) ||
+        String(p?.code || "").toLowerCase().includes(q))
+  );
+}, [permissions, debouncedQuery, assignedCodes]);
+
 
   const totalFiltered = filtered.length;
   const perPage = rowsPerPage === 0 ? totalFiltered : rowsPerPage;
@@ -133,6 +164,22 @@ const Permissions = () => {
     const start = (page - 1) * perPage;
     return filtered.slice(start, start + perPage);
   }, [filtered, page, perPage, rowsPerPage]);
+
+  const handleSubmit = async () => {
+  try {
+    console.log({
+        permission_ids: selected
+    })
+    await axiosInstance.post(`/accounts/v1/role/${roleId}/permissions/add/`, {
+        permission_ids: selected,
+    });
+    toast.success("Permissions assigned successfully!");
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to assign permissions.");
+  }
+};
+
 
   return (
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 space-y-6">
@@ -205,6 +252,7 @@ const Permissions = () => {
                 <th className="px-4 py-3 text-left">Label</th>
                 <th className="px-4 py-3 text-left">Code</th>
                 <th className="px-4 py-3 text-left">Created</th>
+                <th className="px-4 py-3 text-left">Select</th>
               </tr>
             </thead>
 
@@ -249,7 +297,14 @@ const Permissions = () => {
                       </div>
                     </td>
 
-                   
+                    <td className="px-4 py-3">
+  <input
+    type="checkbox"
+    checked={selected.includes(p.id)}
+    onChange={() => handleSelect(p.id)}
+  />
+</td>
+
                   </tr>
                 ))
               ) : (
@@ -264,6 +319,17 @@ const Permissions = () => {
               )}
             </tbody>
           </table>
+
+          <div className="flex justify-end p-4">
+  <button
+    onClick={handleSubmit}
+    disabled={selected.length === 0}
+    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+  >
+    Assign {selected.length} Permission{selected.length !== 1 ? "s" : ""}
+  </button>
+</div>
+
         </div>
 
         {!loading && totalPages > 1 && rowsPerPage !== 0 && (
@@ -330,4 +396,4 @@ const Permissions = () => {
   );
 };
 
-export default Permissions;
+export default AddPermissions;

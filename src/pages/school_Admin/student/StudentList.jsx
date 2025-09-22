@@ -3,6 +3,7 @@ import axiosInstance from "../../../services/axiosInstance";
 import { useSchool } from "../context/SchoolContext";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const searchFields = [
   { label: "Admission Number", value: "admission_number" },
@@ -18,7 +19,10 @@ const searchFields = [
 ];
 
 const StudentList = () => {
+      const navigate = useNavigate();
   const { selectedSchool, selectedSession } = useSchool();
+
+
 
   const [allStudents, setAllStudents] = useState([]);
   const [classOptions, setClassOptions] = useState([]);
@@ -229,6 +233,7 @@ useEffect(() => {
                 { label: "Section", key: "section" },
                 { label: "Father", key: "father_name" },
                 { label: "Roll No", key: "roll_number" },
+             
               ].map((col) => (
                 <th
                   key={col.key}
@@ -245,6 +250,7 @@ useEffect(() => {
               ))}
               <th className="p-3 text-left">Status</th>
               <th className="p-3 text-left">Photo</th>
+              <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -292,6 +298,16 @@ useEffect(() => {
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-200" />
                     )}
+                  </td>
+                  <td className="p-3">
+                    <button
+                      onClick={() =>
+                        navigate(`/school-admin/student/edit/${stu.id}/`)
+                      }
+                      className="inline-flex items-center gap-1.5 text-sm text-purple-700 hover:text-purple-900 font-medium px-2 py-1 rounded hover:bg-purple-100"
+                      title="Edit role">
+                   Edit
+                    </button>
                   </td>
                 </tr>
               ))

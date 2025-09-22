@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASEURL = "http://localhost:8000/api";
+export const BASEURL = "https://api.myvkmunavalli.in/api";
 
 // Create Axios instance
 const axiosInstance = axios.create({

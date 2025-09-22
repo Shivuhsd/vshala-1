@@ -194,6 +194,7 @@ const Roles = () => {
               <tr>
                 <th className="px-4 py-3 text-left">Role</th>
                 <th className="px-4 py-3 text-left">Actions</th>
+                <th className="px-4 py-3 text-left">Permissions</th>
               </tr>
             </thead>
 
@@ -231,6 +232,30 @@ const Roles = () => {
                         title="Edit role"
                       >
                         <FiEdit2 /> Edit
+                      </button>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() =>
+                          navigate(`/school-admin/permissions/add/${role.id}`)
+                        }
+                        className="inline-flex items-center gap-1.5 text-sm text-purple-700 hover:text-purple-900 font-medium px-2 py-1 rounded hover:bg-purple-100"
+                        title="Edit role"
+                      >
+                        <FiEdit2 /> Add Permissions
+                      </button>
+                    </td>
+
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() =>
+                          navigate(`/school-admin/permissions/remove/${role.id}`)
+                        }
+                        className="inline-flex items-center gap-1.5 text-sm text-purple-700 hover:text-purple-900 font-medium px-2 py-1 rounded hover:bg-purple-100"
+                        title="Edit role"
+                      >
+                        <FiEdit2 /> Remove Permissions
                       </button>
                     </td>
                   </tr>

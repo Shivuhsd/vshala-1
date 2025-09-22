@@ -49,7 +49,7 @@ export const addTimetableItem = async (payload) => {
 export const deleteTimetableItem = async (itemId) => {
   // adjust path if your backend differs
   return axiosInstance.delete(
-    `/schools/v1/timetable/items/${encodeURIComponent(itemId)}/`
+    `/schools/v1/timetable/${encodeURIComponent(itemId)}/update/`
   );
 };
 

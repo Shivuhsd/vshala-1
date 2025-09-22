@@ -96,10 +96,10 @@ const StaffList = () => {
                 { key: "photo", label: "Photo" },
                 { key: "name", label: "Name" },
                 { key: "phone_number", label: "Phone" },
-                { key: "email", label: "Email" },
+
                 { key: "salary", label: "Salary" },
                 { key: "designation", label: "Designation" },
-                { key: "role_name", label: "Role" },
+                { key: "role", label: "Role" },
                 { key: "login_email", label: "Login Email" },
                 { key: "action", label: "Action" },
               ].map((col) => (
@@ -135,10 +135,10 @@ const StaffList = () => {
                   </td>
                   <td className="px-4 py-3">{staff.name}</td>
                   <td className="px-4 py-3">{staff.phone_number}</td>
-                  <td className="px-4 py-3">{staff.email}</td>
+       
                   <td className="px-4 py-3">{staff.salary || "-"}</td>
                   <td className="px-4 py-3">{staff.designation || "-"}</td>
-                  <td className="px-4 py-3">{staff.role_name || "-"}</td>
+                  <td className="px-4 py-3">{staff.role || "-"}</td>
                   <td className="px-4 py-3">{staff.login_email || "-"}</td>
                   <td className="px-4 py-3">
                     <button

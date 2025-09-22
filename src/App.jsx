@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navigate } from "react-router-dom"; // 👈 make sure this is imported
+import { ToastContainer } from "react-toastify";
 
 // 🔐 Super Admin
 import Login from "./pages/Admin/auth/login.jsx";
@@ -30,6 +31,7 @@ import GroupSubjects from "./pages/school_Admin/academic/GroupSubjects.jsx";
 import StudentDashboard from "./pages/school_Admin/student/StudentDashboard.jsx";
 import AddAdmissionForm from "./pages/school_Admin/student/AddAdmissionForm.jsx";
 import StudentList from "./pages/school_Admin/student/StudentList";
+import StudentEditForm from "./pages/school_Admin/student/StudentEditForm.jsx";
 
 import AdminDashboard from "./pages/school_Admin/admin/AdminDashboard.jsx";
 import Roles from "./pages/school_Admin/admin/Roles.jsx";
@@ -40,6 +42,8 @@ import AddStaffForm from "./pages/school_Admin/admin/AddStaffForm";
 import EditStaffForm from "./pages/school_Admin/admin/EditStaffForm";
 import BulkAdmission from "./pages/school_Admin/student/BulkAdmission.jsx";
 import Permissions from "./pages/school_Admin/admin/Permissions.jsx";
+import AddPermissions from "./pages/school_Admin/admin/AddPermissions.jsx";
+import RemovePermissions from "./pages/school_Admin/admin/RemovePermissions.jsx";
 
 import Inquiries from "./pages/school_Admin/school/Inquiries.jsx";
 import School_Settings from "./pages/school_Admin/school/Settings.jsx";
@@ -70,6 +74,7 @@ import { SchoolProvider } from "./pages/school_Admin/context/SchoolContext.jsx";
 const App = () => {
   return (
     <SchoolProvider>
+      <ToastContainer/>
       <Router>
         <Routes>
           {/* 🔐 Super Admin Routes */}
@@ -126,6 +131,7 @@ const App = () => {
             {/* SM Student */}
             <Route path="student/dashboard" element={<StudentDashboard />} />
             <Route path="student/admission" element={<AddAdmissionForm />} />
+            <Route path="student/edit/:studentId/" element={<StudentEditForm/>} />
             <Route path="students" element={<StudentList />} />
             <Route
               path="student/certificates"
@@ -145,6 +151,9 @@ const App = () => {
             <Route path="staff/add" element={<AddStaffForm />} />
             <Route path="staff/edit/:id" element={<EditStaffForm />} />
             <Route path="permissions" element={<Permissions />} />
+            <Route path="permissions/add/:roleId/" element={<AddPermissions />} />
+            <Route path="permissions/remove/:roleId/" element={<RemovePermissions />} />
+
             {/* SM Inventory */}
             <Route path="inventory/supplier" element={<SupplierList />} />\
             <Route

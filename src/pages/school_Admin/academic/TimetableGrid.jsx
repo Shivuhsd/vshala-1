@@ -1,405 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { FiEdit, FiTrash2, FiPrinter, FiX } from "react-icons/fi";
-// import RoutineFormModal from "./RoutineFormModal";
-// import { printTimetable } from "./timetableUtils";
-
-// const days = [
-//   "Monday",
-//   "Tuesday",
-//   "Wednesday",
-//   "Thursday",
-//   "Friday",
-//   "Saturday",
-// ];
-
-// const TimetableGrid = ({ classData, onClose }) => {
-//   const [routineMap, setRoutineMap] = useState({});
-//   const [editData, setEditData] = useState(null);
-
-//   useEffect(() => {
-//     // Dummy data only for Monday
-//     const dummy = {
-//       Monday: [
-//         {
-//           id: 1,
-//           subject: "MATHS",
-//           start_time: "07:30 am",
-//           end_time: "08:25 am",
-//           room_no: "Room No. Theory",
-//           teacher: "Ms. Afreen",
-//         },
-//         {
-//           id: 2,
-//           subject: "ACCOUNTS",
-//           start_time: "08:30 am",
-//           end_time: "09:25 am",
-//           room_no: "Room No. 102",
-//           teacher: "Mrs. Manjula",
-//         },
-//         {
-//           id: 3,
-//           subject: "ENGLISH",
-//           start_time: "09:30 am",
-//           end_time: "10:25 am",
-//           room_no: "Room No. 201",
-//           teacher: "Ms. Sumaya",
-//         },
-//         {
-//           id: 4,
-//           subject: "C Programming",
-//           start_time: "10:30 am",
-//           end_time: "11:25 am",
-//           room_no: "Lab A1",
-//           teacher: "Mr. Upendra Kumar",
-//         },
-//         {
-//           id: 4,
-//           subject: "C Programming",
-//           start_time: "10:30 am",
-//           end_time: "11:25 am",
-//           room_no: "Lab A1",
-//           teacher: "Mr. Upendra Kumar",
-//         },
-//         {
-//           id: 4,
-//           subject: "C Programming",
-//           start_time: "10:30 am",
-//           end_time: "11:25 am",
-//           room_no: "Lab A1",
-//           teacher: "Mr. Upendra Kumar",
-//         },
-//         {
-//           id: 4,
-//           subject: "C Programming",
-//           start_time: "10:30 am",
-//           end_time: "11:25 am",
-//           room_no: "Lab A1",
-//           teacher: "Mr. Upendra Kumar",
-//         },
-//       ],
-//     };
-//     setRoutineMap(dummy);
-//   }, []);
-
-//   const handleDelete = (id) => {
-//     const updated = { ...routineMap };
-//     updated.Monday = updated.Monday.filter((item) => item.id !== id);
-//     setRoutineMap(updated);
-//   };
-
-//   return (
-//     <div className="fixed inset-0 z-50 backdrop-blur-sm bg-black/30 flex items-center justify-center overflow-y-auto">
-//       <div
-//         className="bg-white max-w-7xl w-full mx-6 rounded-lg shadow-xl p-6 relative overflow-x-auto"
-//         id="print-timetable"
-//       >
-//         {/* Close */}
-//         <button
-//           onClick={onClose}
-//           className="absolute top-4 right-4 text-gray-600 hover:text-black"
-//         >
-//           <FiX size={20} />
-//         </button>
-
-//         {/* Header */}
-//         <div className="flex justify-between items-center mb-6">
-//           <div>
-//             <h2 className="text-2xl font-bold text-purple-700 mb-1">
-//               Class Timetable: BCA 1st Year - A
-//             </h2>
-//             <p className="text-sm text-gray-600">
-//               Sample Layout with Dummy Data
-//             </p>
-//           </div>
-//           <button
-//             onClick={() => printTimetable("print-timetable")}
-//             className="bg-[#6B21A8] hover:bg-[#9333EA] text-white px-4 py-2 rounded-md text-sm font-medium flex items-center gap-2"
-//           >
-//             <FiPrinter />
-//             Print Timetable
-//           </button>
-//         </div>
-
-//         {/* Table */}
-//         <div className="overflow-x-auto border rounded-lg">
-//           <table className="min-w-full text-sm text-gray-800 border-collapse">
-//             <thead className="bg-gray-100 text-xs uppercase text-gray-600">
-//               <tr>
-//                 <th className="border px-4 py-3 w-32 text-left">Day</th>
-//                 <th className="border px-4 py-3 text-left">Time Slots</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {days.map((day) => (
-//                 <tr key={day} className="border-t align-top">
-//                   <td className="border px-4 py-3 font-semibold text-purple-700 whitespace-nowrap">
-//                     {day}
-//                   </td>
-//                   <td className="border px-2 py-3">
-//                     <div className="flex flex-wrap gap-3">
-//                       {(routineMap[day] || []).length > 0 ? (
-//                         routineMap[day].map((entry) => (
-//                           <div
-//                             key={entry.id}
-//                             className="bg-white border border-gray-300 rounded-lg shadow-sm px-4 py-2 min-w-[220px] max-w-[240px] relative"
-//                           >
-//                             <div className="font-semibold text-[#334155] text-sm">
-//                               {entry.subject}
-//                             </div>
-//                             <div className="text-xs text-gray-600">
-//                               {entry.start_time} - {entry.end_time}
-//                             </div>
-//                             <div className="text-xs text-gray-500">
-//                               Room: {entry.room_no}
-//                             </div>
-//                             <div className="text-xs italic text-gray-700 mt-1">
-//                               – {entry.teacher}
-//                             </div>
-
-//                             {/* Edit/Delete Icons */}
-//                             <div className="absolute top-1.5 right-2 flex gap-2 text-sm text-gray-500">
-//                               <button
-//                                 onClick={() => setEditData(entry)}
-//                                 className="hover:text-purple-700"
-//                               >
-//                                 <FiEdit />
-//                               </button>
-//                               <button
-//                                 onClick={() => handleDelete(entry.id)}
-//                                 className="hover:text-red-600"
-//                               >
-//                                 <FiTrash2 />
-//                               </button>
-//                             </div>
-//                           </div>
-//                         ))
-//                       ) : (
-//                         <div className="text-xs text-gray-500 italic">
-//                           No routines
-//                         </div>
-//                       )}
-//                     </div>
-//                   </td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </table>
-//         </div>
-
-//         {editData && (
-//           <RoutineFormModal
-//             open={true}
-//             onClose={() => setEditData(null)}
-//             initialData={editData}
-//             onSaved={() => setEditData(null)}
-//           />
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default TimetableGrid;
-// import React, { useEffect, useState } from "react";
-// import { Plus, Loader2 } from "lucide-react";
-// import axios from "axios";
-
-// const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat"];
-
-// const TimetableGrid = ({ selectedTimetableId }) => {
-//   const [loading, setLoading] = useState(false);
-//   const [timetableItems, setTimetableItems] = useState([]);
-//   const [showModal, setShowModal] = useState(false);
-//   const [newItem, setNewItem] = useState({
-//     subject: "",
-//     day_of_week: "",
-//     start_time: "",
-//     end_time: "",
-//     room_number: "",
-//   });
-
-//   // ✅ Fetch timetable items when timetableId changes
-//   useEffect(() => {
-//     if (!selectedTimetableId) return;
-//     setLoading(true);
-//     axios
-//       .get(
-//         `/schools/v1/timetable/items/add/?timetablename_id=${selectedTimetableId}`
-//       )
-//       .then((res) => {
-//         setTimetableItems(res.data?.timetables || []);
-//       })
-//       .catch((err) => console.error(err))
-//       .finally(() => setLoading(false));
-//   }, [selectedTimetableId]);
-
-//   // ✅ Handle Add Item
-//   const handleAddItem = () => {
-//     if (!newItem.subject || !newItem.day_of_week) {
-//       alert("Please fill all required fields");
-//       return;
-//     }
-//     axios
-//       .post("/schools/v1/timetable/items/add/", {
-//         ...newItem,
-//         timetable: selectedTimetableId,
-//       })
-//       .then((res) => {
-//         setTimetableItems((prev) => [...prev, res.data]);
-//         setShowModal(false);
-//         setNewItem({
-//           subject: "",
-//           day_of_week: "",
-//           start_time: "",
-//           end_time: "",
-//           room_number: "",
-//         });
-//       })
-//       .catch((err) => console.error(err));
-//   };
-
-//   return (
-//     <div className="p-6 bg-white shadow rounded-md">
-//       <div className="flex justify-between items-center mb-4">
-//         <h2 className="text-xl font-semibold">Timetable</h2>
-//         <button
-//           onClick={() => setShowModal(true)}
-//           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-//         >
-//           <Plus size={18} /> Add Slot
-//         </button>
-//       </div>
-
-//       {loading ? (
-//         <div className="flex justify-center items-center py-10">
-//           <Loader2 className="animate-spin" size={28} />
-//         </div>
-//       ) : (
-//         <div className="overflow-x-auto">
-//           <table className="min-w-full border border-gray-200">
-//             <thead>
-//               <tr className="bg-gray-100">
-//                 <th className="border p-2 text-left">Day</th>
-//                 <th className="border p-2 text-left">Time</th>
-//                 <th className="border p-2 text-left">Subject</th>
-//                 <th className="border p-2 text-left">Room</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {timetableItems.length === 0 ? (
-//                 <tr>
-//                   <td
-//                     colSpan="4"
-//                     className="text-center py-6 text-gray-500 italic"
-//                   >
-//                     No timetable entries yet
-//                   </td>
-//                 </tr>
-//               ) : (
-//                 timetableItems.map((item) => (
-//                   <tr key={item.id} className="hover:bg-gray-50">
-//                     <td className="border p-2 capitalize">
-//                       {item.day_of_week}
-//                     </td>
-//                     <td className="border p-2">
-//                       {item.start_time} - {item.end_time}
-//                     </td>
-//                     <td className="border p-2">{item.subject}</td>
-//                     <td className="border p-2">{item.room_number || "-"}</td>
-//                   </tr>
-//                 ))
-//               )}
-//             </tbody>
-//           </table>
-//         </div>
-//       )}
-
-//       {/* ✅ Add Slot Modal */}
-//       {showModal && (
-//         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-//           <div className="bg-white rounded-lg p-6 w-96 shadow-lg">
-//             <h3 className="text-lg font-semibold mb-4">Add Timetable Slot</h3>
-
-//             <div className="space-y-3">
-//               <select
-//                 className="w-full border p-2 rounded"
-//                 value={newItem.day_of_week}
-//                 onChange={(e) =>
-//                   setNewItem({ ...newItem, day_of_week: e.target.value })
-//                 }
-//               >
-//                 <option value="">Select Day</option>
-//                 {DAYS.map((d) => (
-//                   <option key={d} value={d}>
-//                     {d.toUpperCase()}
-//                   </option>
-//                 ))}
-//               </select>
-
-//               <input
-//                 type="time"
-//                 className="w-full border p-2 rounded"
-//                 value={newItem.start_time}
-//                 onChange={(e) =>
-//                   setNewItem({ ...newItem, start_time: e.target.value })
-//                 }
-//               />
-
-//               <input
-//                 type="time"
-//                 className="w-full border p-2 rounded"
-//                 value={newItem.end_time}
-//                 onChange={(e) =>
-//                   setNewItem({ ...newItem, end_time: e.target.value })
-//                 }
-//               />
-
-//               <input
-//                 type="text"
-//                 placeholder="Subject ID"
-//                 className="w-full border p-2 rounded"
-//                 value={newItem.subject}
-//                 onChange={(e) =>
-//                   setNewItem({ ...newItem, subject: e.target.value })
-//                 }
-//               />
-
-//               <input
-//                 type="text"
-//                 placeholder="Room Number (optional)"
-//                 className="w-full border p-2 rounded"
-//                 value={newItem.room_number}
-//                 onChange={(e) =>
-//                   setNewItem({ ...newItem, room_number: e.target.value })
-//                 }
-//               />
-//             </div>
-
-//             <div className="flex justify-end gap-3 mt-5">
-//               <button
-//                 className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
-//                 onClick={() => setShowModal(false)}
-//               >
-//                 Cancel
-//               </button>
-//               <button
-//                 onClick={handleAddItem}
-//                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-//               >
-//                 Save
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default TimetableGrid;
-// school_Admin/pages/school_Admin/TimetableGrid.jsx
-
-// TimetableGrid.jsx
 // TimetableGrid.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FiPrinter, FiPlus, FiRefreshCw, FiX, FiTrash2 } from "react-icons/fi";
@@ -410,6 +8,7 @@ import {
   addTimetableItem,
   deleteTimetableItem,
 } from "../../../services/timetableApi";
+import axiosInstance from "../../../services/axiosInstance";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const DAY_LABEL = {
@@ -445,6 +44,11 @@ const TimetableGrid = ({
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+
+
+  const [subjects, setSubjects] = useState([]);
+
 
   const [form, setForm] = useState({
     subject: "",
@@ -484,6 +88,24 @@ const TimetableGrid = ({
     };
     fetch();
   }, [timetableId, selectedSchool?.id, selectedSession?.id]);
+
+
+  useEffect(() => {
+  const fetchSubjects = async () => {
+    try {
+      const res = await axiosInstance.get(`/schools/v2/subjects/?school_id=${selectedSchool?.id}&session_id=${selectedSession?.id}`); // replace with your API
+      setSubjects(res.data || []); // adjust based on API response
+    } catch (err) {
+      console.error("Failed to fetch subjects", err);
+    }
+  };
+
+  fetchSubjects();
+}, []);
+
+
+
+
 
   const timeRows = useMemo(() => {
     const bounds = new Set();
@@ -823,18 +445,26 @@ const TimetableGrid = ({
               className="mb-4 grid grid-cols-1 md:grid-cols-6 gap-3 items-end"
             >
               <div className="md:col-span-2">
-                <label className="block text-xs text-gray-600 mb-1">
-                  Subject (ID)
-                </label>
-                <input
+              <label className="block text-xs text-gray-600 mb-1">
+                Subject
+              </label>
+              <select
                   value={form.subject}
                   onChange={(e) =>
                     setForm((f) => ({ ...f, subject: e.target.value }))
                   }
                   className="w-full border rounded px-3 py-2 text-sm"
-                  placeholder="subject id"
-                />
-              </div>
+                >
+                  <option value="">Select a subject</option>
+                  {subjects.map((subj) => (
+                    <option key={subj.id} value={subj.id}>
+                      {subj.label} ({subj.subject_type})
+                    </option>
+                  ))}
+              </select>
+          </div>
+
+
 
               <div>
                 <label className="block text-xs text-gray-600 mb-1">Day</label>
@@ -964,7 +594,7 @@ const TimetableGrid = ({
                                 <div className="flex justify-between items-start gap-2">
                                   <div>
                                     <div className="font-semibold text-gray-900">
-                                      {it.subject_name ||
+                                      {it.subject_label ||
                                         it.subject ||
                                         it.subject_id ||
                                         "—"}

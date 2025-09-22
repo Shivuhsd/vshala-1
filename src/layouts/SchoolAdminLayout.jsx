@@ -772,7 +772,7 @@ const SchoolAdminLayout = () => {
                 className="w-8 h-8 rounded-full border border-[#8C50E2]"
               />
               <h1 className="text-lg md:text-xl font-bold text-[#5906B2] truncate">
-                Anjuman College
+                Vshala
               </h1>
             </div>
           )}

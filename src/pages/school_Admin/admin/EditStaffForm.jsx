@@ -7,55 +7,56 @@ import "react-toastify/dist/ReactToastify.css";
 import axiosInstance from "../../../services/axiosInstance";
 import { useSchool } from "../context/SchoolContext";
 
-const PERMISSIONS = [
-  "Manage Inquiries",
-  "Manage Admissions",
-  "Manage Students",
-  "Delete Students",
-  "Add/Remove Admins",
-  "Manage Roles",
-  "Add/Remove Staff",
-  "Student Promotion",
-  "Transfer Student",
-  "Manage Certificates",
-  "Manage Classes & Sections",
-  "Delete Class Sections",
-  "Manage Subjects",
-  "Manage Timetable",
-  "View Timetable",
-  "Manage Student Attendance",
-  "Manage Staff Attendance",
-  "Manage Student Leaves",
-  "Manage Staff Leaves",
-  "Manage Study Materials",
-  "Manage Homework",
-  "Manage Live Classes",
-  "Manage Library",
-  "Manage Transport",
-  "Manage Noticeboard",
-  "Manage Events",
-  "Manage Exams",
-  "Manage Expenses",
-  "Manage Income",
-  "Manage Invoices",
-  "Delete Invoices",
-  "Delete Payments",
-  "View Stats - Payments",
-  "View Stats - Amount By Fees Structure",
-  "View Stats - Expense",
-  "View Stats - Income",
-  "Manage Fee Types",
-  "Send Notifications",
-  "Manage Settings",
-  "Manage Logs",
-];
-
 const EditStaffForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { selectedSchool, selectedSession } = useSchool();
 
   const [formData, setFormData] = useState(null);
+const [classOptions, setClassOptions] = useState([]); // list of classes
+const [sectionOptions, setSectionOptions] = useState([]); // sections of selected class
+
+useEffect(() => {
+  const fetchClassSections = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `/schools/v1/schools/classes/links/?school_id=${selectedSchool?.id}&session_id=${selectedSession?.id}`
+      );
+
+      const classes = res.data.results || [];
+      setClassOptions(classes);
+
+      // Preload sections if staff already has class_s
+      const selectedClass = classes.find(c => c.class_id === formData?.class_s);
+      setSectionOptions(selectedClass?.sections || []);
+    } catch (err) {
+      console.error("Failed to fetch classes/sections", err);
+    }
+  };
+
+  if (selectedSchool) fetchClassSections();
+}, [selectedSchool, selectedSession, formData?.class_s]);
+
+
+
+const [roles, setRoles] = useState([]);
+
+useEffect(() => {
+  const fetchRoles = async () => {
+    try {
+      const res = await axiosInstance.get("/accounts/v1/roles/"); // adjust URL
+      setRoles(res.data.roles || []);
+    } catch (err) {
+      console.error("Failed to fetch roles", err);
+    }
+  };
+
+  fetchRoles();
+}, []);
+
+
+
+
 
   useEffect(() => {
     const fetchStaff = async () => {
@@ -64,9 +65,25 @@ const EditStaffForm = () => {
         const data = res.data;
 
         setFormData({
-          ...data,
+          name: data.name || "",
+          gender: data.gender || "",
+          dob: data.dob || "",
+          phone_number: data.phone_number || "",
+          email: data.email || "",
+          address: data.address || "",
+          joining_date: data.joining_date || "",
+          role: data.role || "",
+          salary: data.salary || "",
+          designation: data.designation || "",
+          description: data.note || "",
+          class_s: data.class_s || "",
+          section: data.section || "",
+          bus_in_charge: data.bus_in_charge ? "yes" : "no",
           login_option: data.username ? "existing_user" : "disallow",
-          permissions: data.permissions || [],
+          username: data.username || "",
+          login_email: data.login_email || "",
+          password: "",
+          is_active: data.is_active ?? true,
         });
       } catch (err) {
         toast.error("Failed to load staff details.");
@@ -79,29 +96,36 @@ const EditStaffForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "phone" && !/^\d{0,10}$/.test(value)) return;
+    if (name === "phone_number" && !/^\d{0,10}$/.test(value)) return;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const togglePermission = (perm) => {
-    setFormData((prev) => {
-      const exists = prev.permissions.includes(perm);
-      const updated = exists
-        ? prev.permissions.filter((p) => p !== perm)
-        : [...prev.permissions, perm];
-      return { ...prev, permissions: updated };
-    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.name.trim()) return toast.error("Name is required.");
-    if (!/^\d{10}$/.test(formData.phone))
+    if (!/^\d{10}$/.test(formData.phone_number))
       return toast.error("Phone must be 10 digits.");
 
     const payload = {
-      ...formData,
+      name: formData.name,
+      gender: formData.gender,
+      dob: formData.dob,
+      phone_number: formData.phone_number,
+      email: formData.email,
+      address: formData.address,
+      joining_date: formData.joining_date,
+      role: formData.role,
+      salary: formData.salary,
+      designation: formData.designation,
+      note: formData.description,
+      class_s: formData.class_s,
+      section: formData.section,
+      bus_in_charge: formData.bus_in_charge === "yes",
+      username: formData.username || null,
+      login_email: formData.login_email || null,
+      password: formData.password || null,
+      is_active: formData.is_active,
       tenant: selectedSchool?.id,
       session: selectedSession?.id,
       from_front: true,
@@ -136,7 +160,7 @@ const EditStaffForm = () => {
         </div>
       </div>
 
-      {/* Sections — same as AddStaffForm, but using formData state */}
+      {/* Personal Details */}
       <section>
         <h3 className="text-lg font-semibold text-gray-700 mb-4">
           Personal Details
@@ -168,19 +192,13 @@ const EditStaffForm = () => {
             className="border rounded px-3 py-2 text-sm"
           />
           <input
-            name="phone"
-            value={formData.phone}
+            name="phone_number"
+            value={formData.phone_number}
             onChange={handleChange}
             placeholder="Phone *"
             className="border rounded px-3 py-2 text-sm"
           />
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-            className="border rounded px-3 py-2 text-sm"
-          />
+        
           <textarea
             name="address"
             value={formData.address}
@@ -199,18 +217,25 @@ const EditStaffForm = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input
             type="date"
-            name="join_date"
-            value={formData.join_date}
+            name="joining_date"
+            value={formData.joining_date}
             onChange={handleChange}
             className="border rounded px-3 py-2 text-sm"
           />
-          <input
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            placeholder="Role *"
-            className="border rounded px-3 py-2 text-sm"
-          />
+         <select
+  name="role"
+  value={formData.role}
+  onChange={handleChange}
+  className="border rounded px-3 py-2 text-sm"
+>
+  <option value="">Select Role</option>
+  {roles.map((r) => (
+    <option key={r.id} value={r.id}>
+      {r.name}
+    </option>
+  ))}
+</select>
+
           <input
             name="salary"
             value={formData.salary}
@@ -235,28 +260,55 @@ const EditStaffForm = () => {
         </div>
       </section>
 
-      {/* Class Teacher */}
-      <section>
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">
-          Class Teacher
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            name="class"
-            value={formData.class}
-            onChange={handleChange}
-            placeholder="Select Class"
-            className="border rounded px-3 py-2 text-sm"
-          />
-          <input
-            name="section"
-            value={formData.section}
-            onChange={handleChange}
-            placeholder="Select Section"
-            className="border rounded px-3 py-2 text-sm"
-          />
-        </div>
-      </section>
+<section>
+  <h3 className="text-lg font-semibold text-gray-700 mb-4">
+    Class Teacher
+  </h3>
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    {/* Class Dropdown */}
+    <select
+      name="class_s"
+      value={formData.class_s}
+      onChange={(e) => {
+        const selectedClassId = e.target.value;
+        const selectedClass = classOptions.find(c => c.class_id === selectedClassId);
+        setFormData(prev => ({
+          ...prev,
+          class_s: selectedClassId,
+          section: "", // reset section
+        }));
+        setSectionOptions(selectedClass?.sections || []);
+      }}
+      className="border rounded px-3 py-2 text-sm"
+    >
+      <option value="">Select Class</option>
+      {classOptions.map(cls => (
+        <option key={cls.class_id} value={cls.class_id}>
+          {cls.class_label}
+        </option>
+      ))}
+    </select>
+
+    {/* Section Dropdown */}
+    <select
+      name="section"
+      value={formData.section}
+      onChange={(e) => setFormData(prev => ({ ...prev, section: e.target.value }))}
+      className="border rounded px-3 py-2 text-sm"
+      disabled={!formData.class_s} // only if class is selected
+    >
+      <option value="">Select Section</option>
+      {sectionOptions.map(sec => (
+        <option key={sec.id} value={sec.id}>
+          {sec.label}
+        </option>
+      ))}
+    </select>
+  </div>
+</section>
+
+
 
       {/* Bus In-charge */}
       <section>
@@ -267,9 +319,9 @@ const EditStaffForm = () => {
           <label className="flex gap-2 items-center">
             <input
               type="radio"
-              name="is_bus_incharge"
+              name="bus_in_charge"
               value="yes"
-              checked={formData.is_bus_incharge === "yes"}
+              checked={formData.bus_in_charge === "yes"}
               onChange={handleChange}
             />
             Yes
@@ -277,33 +329,13 @@ const EditStaffForm = () => {
           <label className="flex gap-2 items-center">
             <input
               type="radio"
-              name="is_bus_incharge"
+              name="bus_in_charge"
               value="no"
-              checked={formData.is_bus_incharge === "no"}
+              checked={formData.bus_in_charge === "no"}
               onChange={handleChange}
             />
             No
           </label>
-        </div>
-      </section>
-
-      {/* Permissions */}
-      <section>
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">
-          Permissions
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto border rounded-md p-4">
-          {PERMISSIONS.map((perm, idx) => (
-            <label key={idx} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                checked={formData.permissions.includes(perm)}
-                onChange={() => togglePermission(perm)}
-                className="accent-[#6B21A8]"
-              />
-              {perm}
-            </label>
-          ))}
         </div>
       </section>
 
@@ -344,26 +376,27 @@ const EditStaffForm = () => {
             New User
           </label>
         </div>
+
         {(formData.login_option === "existing_user" ||
           formData.login_option === "new_user") && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               name="username"
-              value={formData.username || ""}
+              value={formData.username}
               onChange={handleChange}
               placeholder="Username"
               className="border rounded px-3 py-2 text-sm"
             />
             <input
               name="login_email"
-              value={formData.login_email || ""}
+              value={formData.login_email}
               onChange={handleChange}
               placeholder="Login Email"
               className="border rounded px-3 py-2 text-sm"
             />
             <input
               name="password"
-              value={formData.password || ""}
+              value={formData.password}
               onChange={handleChange}
               placeholder="Password"
               type="password"
@@ -383,7 +416,9 @@ const EditStaffForm = () => {
               name="is_active"
               value="true"
               checked={formData.is_active === true}
-              onChange={() => setFormData((p) => ({ ...p, is_active: true }))}
+              onChange={() =>
+                setFormData((p) => ({ ...p, is_active: true }))
+              }
             />{" "}
             Active
           </label>
@@ -393,7 +428,9 @@ const EditStaffForm = () => {
               name="is_active"
               value="false"
               checked={formData.is_active === false}
-              onChange={() => setFormData((p) => ({ ...p, is_active: false }))}
+              onChange={() =>
+                setFormData((p) => ({ ...p, is_active: false }))
+              }
             />{" "}
             Inactive
           </label>
